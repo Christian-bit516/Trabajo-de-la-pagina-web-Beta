@@ -1,71 +1,135 @@
+/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Tema Oscuro Neón */
+    --background: 240 10% 2%; /* Negro casi puro */
+    --foreground: 210 40% 98%; /* Blanco ligeramente azulado */
 
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
+    --card: 240 8% 7%; /* Gris muy oscuro para tarjetas */
+    --card-foreground: 210 40% 95%; /* Texto ligeramente más suave en tarjetas */
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 240 9% 5%; /* Negro azulado para popovers */
+    --popover-foreground: 210 40% 96%;
 
-    --primary: 271 81% 56%;
-    --primary-foreground: 0 0% 100%;
+    /* Colores Neón Vibrantes */
+    --primary: 275 100% 55%; /* Morado Neón Intenso */
+    --primary-foreground: 0 0% 100%; /* Blanco puro para contraste */
 
-    --secondary: 217 91% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 195 100% 50%; /* Cyan Neón */
+    --secondary-foreground: 240 10% 2%; /* Negro para contraste en cyan */
 
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 64.9%;
+    --accent: 300 100% 50%; /* Magenta Neón */
+    --accent-foreground: 0 0% 100%; /* Blanco */
 
-    --accent: 189 94% 43%;
-    --accent-foreground: 0 0% 100%;
+    /* Muted & Borders con tinte */
+    --muted: 240 6% 15%; /* Gris oscuro azulado */
+    --muted-foreground: 240 5% 55%; /* Gris claro azulado */
 
+    --border: 240 5% 18%; /* Borde sutilmente azulado */
+    --input: 240 5% 12%; /* Input más oscuro */
+    --ring: 275 100% 65%; /* Anillo de foco morado más brillante */
+
+    /* Destructive (Mantener similar) */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 10% 15%;
-    --input: 240 10% 15%;
-    --ring: 271 81% 56%;
+    --radius: 0.75rem; /* Mantener bordes redondeados */
 
-    --radius: 0.75rem;
+    /* Efectos Gamer */
+    --neon-glow-primary: 0 0 15px hsl(var(--primary) / 0.6), 0 0 30px hsl(var(--primary) / 0.3);
+    --neon-glow-secondary: 0 0 15px hsl(var(--secondary) / 0.7), 0 0 30px hsl(var(--secondary) / 0.4);
+    --neon-glow-accent: 0 0 15px hsl(var(--accent) / 0.6), 0 0 30px hsl(var(--accent) / 0.3);
 
-    /* Gaming theme colors */
-    --neon-purple: 271 81% 56%;
-    --neon-blue: 217 91% 60%;
-    --neon-cyan: 189 94% 43%;
-    --glow-purple: 271 91% 65%;
-    --glow-blue: 217 91% 70%;
-    
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(271 81% 56%) 0%, hsl(217 91% 60%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(271 91% 25%) 0%, hsl(217 91% 20%) 50%, hsl(189 94% 18%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(240 10% 8%) 0%, hsl(240 10% 6%) 100%);
-    
-    /* Shadows & Glows */
-    --shadow-glow: 0 0 40px hsl(var(--neon-purple) / 0.5);
-    --shadow-glow-blue: 0 0 40px hsl(var(--neon-blue) / 0.5);
-    --shadow-card: 0 8px 32px hsl(240 10% 3% / 0.5);
-    
-    /* Animations */
+    /* Transición suave */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-}
 
-@layer base {
+  /* Opcional: Aplicar fuente temática si tienes una */
+  /* @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap'); */
+  /* body { font-family: 'Orbitron', sans-serif; } */
+
   * {
-    @apply border-border;
+    @apply border-border; /* Aplicar color de borde por defecto */
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased; /* Fondo, texto y suavizado */
+    /* Efecto sutil de grano (opcional) */
+    /* background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%239C92AC' fill-opacity='0.05' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E"); */
+  }
+
+  /* Estilo custom para scrollbars (Webkit) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 10px;
+    border: 2px solid hsl(var(--background));
+  }
+   ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--primary) / 0.7);
+  }
+
+}
+
+/* Utilidades personalizadas */
+@layer utilities {
+  .text-glow-primary {
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.8), 0 0 16px hsl(var(--primary) / 0.4);
+  }
+  .text-glow-secondary {
+    text-shadow: 0 0 8px hsl(var(--secondary) / 0.9), 0 0 16px hsl(var(--secondary) / 0.5);
+  }
+   .text-glow-accent {
+    text-shadow: 0 0 8px hsl(var(--accent) / 0.8), 0 0 16px hsl(var(--accent) / 0.4);
+  }
+  .box-glow-primary {
+    box-shadow: var(--neon-glow-primary);
+  }
+  .box-glow-secondary {
+    box-shadow: var(--neon-glow-secondary);
+  }
+   .box-glow-accent {
+    box-shadow: var(--neon-glow-accent);
+  }
+
+   /* Animación de borde degradado */
+  .animated-border {
+    position: relative;
+    overflow: hidden;
+    z-index: 0; /* Asegura que el pseudo-elemento esté detrás */
+  }
+  .animated-border::before {
+    content: '';
+    position: absolute;
+    z-index: -1; /* Detrás del contenido */
+    top: -2px; left: -2px; right: -2px; bottom: -2px; /* Ligeramente más grande */
+    background: conic-gradient(from var(--gradient-angle, 0deg), hsl(var(--primary)/0.8), hsl(var(--secondary)/0.8), hsl(var(--accent)/0.8), hsl(var(--primary)/0.8));
+    border-radius: inherit; /* Heredar borde redondeado */
+    animation: rotateGradient 4s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  .animated-border:hover::before {
+    opacity: 1; /* Mostrar en hover */
+  }
+  @property --gradient-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+  }
+  @keyframes rotateGradient {
+    0% { --gradient-angle: 0deg; }
+    100% { --gradient-angle: 360deg; }
   }
 }

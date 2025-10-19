@@ -1,62 +1,145 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Star, ShoppingCart } from "lucide-react";
+// src/context/CartContext.tsx
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { toast as uiToast } from "@/components/ui/use-toast";
 
-interface GameCardProps {
-  title: string;
-  image: string;
-  price: string;
-  rating: number;
-  genre: string;
+export interface CartItem {
+  id: number;
+  titulo: string;
+  descripcion?: string;
+  precio: number;
+  image_url?: string;
+  quantity: number; // Quantity es ahora obligatorio
 }
 
-const GameCard = ({ title, image, price, rating, genre }: GameCardProps) => {
-  return (
-    <Card className="group relative overflow-hidden border-border/50 bg-card hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--primary)/0.2)]">
-      <div className="relative overflow-hidden aspect-[3/4]">
-        <img 
-          src={image} 
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Hover Actions */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Button 
-            size="lg"
-            className="gap-2 bg-primary/90 backdrop-blur-sm hover:bg-primary"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            Comprar Ahora
-          </Button>
-        </div>
+interface CartContextValue {
+  cartItems: CartItem[];
+  addToCart: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
+  removeFromCart: (id: number) => void;
+  updateQuantity: (id: number, quantity: number) => void;
+  clearCart: () => void;
+  getItemCount: () => number; // Total de artículos individuales
+  getTotalPrice: () => number; // Precio total
+}
 
-        {/* Genre Badge */}
-        <div className="absolute top-3 left-3 px-3 py-1 bg-background/80 backdrop-blur-sm rounded-full text-xs font-medium">
-          {genre}
-        </div>
-      </div>
+const CartContext = createContext<CartContextValue | undefined>(undefined);
 
-      <CardContent className="p-4 space-y-2">
-        <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
-          {title}
-        </h3>
-        <div className="flex items-center gap-1 text-sm">
-          <Star className="h-4 w-4 fill-accent text-accent" />
-          <span className="font-medium">{rating}</span>
-          <span className="text-muted-foreground">/5</span>
-        </div>
-      </CardContent>
+interface CartProviderProps {
+  children: ReactNode;
+}
 
-      <CardFooter className="p-4 pt-0">
-        <div className="flex items-center justify-between w-full">
-          <span className="text-2xl font-bold text-primary">{price}</span>
-          <span className="text-xs text-muted-foreground line-through">$59.99</span>
-        </div>
-      </CardFooter>
-    </Card>
-  );
+export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  // Cargar desde localStorage
+  useEffect(() => {
+    try {
+      const storedCart = localStorage.getItem("cart");
+      if (storedCart) {
+        const parsedCart: CartItem[] = JSON.parse(storedCart);
+        const validatedCart = parsedCart.map(item => ({
+          ...item,
+          quantity: item.quantity && item.quantity > 0 ? item.quantity : 1,
+        }));
+        setCartItems(validatedCart);
+      }
+    } catch (error) {
+      console.error("Error al cargar el carrito desde localStorage:", error);
+      localStorage.removeItem("cart");
+    }
+  }, []);
+
+  // Guardar en localStorage
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+    const quantityToAdd = item.quantity && item.quantity > 0 ? item.quantity : 1;
+    setCartItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex((prevItem) => prevItem.id === item.id);
+      let updatedItems: CartItem[];
+      if (existingItemIndex !== -1) {
+        updatedItems = prevItems.map((prevItem, index) =>
+          index === existingItemIndex
+            ? { ...prevItem, quantity: prevItem.quantity + quantityToAdd }
+            : prevItem
+        );
+        uiToast({ title: "🛒 Cantidad actualizada", description: `+${quantityToAdd} ${item.titulo} en tu carrito.` });
+      } else {
+         const newItem: CartItem = {
+           ...item,
+           quantity: quantityToAdd,
+           descripcion: item.descripcion || '',
+           image_url: item.image_url || '',
+         };
+        updatedItems = [...prevItems, newItem];
+        uiToast({ title: "✅ Juego agregado", description: `${item.titulo} (${quantityToAdd}) añadido.` });
+      }
+      return updatedItems;
+    });
+  };
+
+  const removeFromCart = (id: number) => {
+    setCartItems((prevItems) => {
+      const removedItem = prevItems.find((item) => item.id === id);
+      const updatedItems = prevItems.filter((item) => item.id !== id);
+      if (removedItem) {
+        uiToast({ title: "❌ Juego eliminado", description: `${removedItem.titulo} quitado.`, variant: "destructive" });
+      }
+      return updatedItems;
+    });
+  };
+
+  const updateQuantity = (id: number, quantity: number) => {
+    setCartItems(prevItems => {
+        const currentItem = prevItems.find(item => item.id === id);
+        if (!currentItem) return prevItems; // No hacer nada si el item no existe
+
+        if (quantity <= 0) {
+            // Eliminar si la cantidad es 0 o menos
+             if (currentItem) { // Toast solo si realmente se elimina
+                 uiToast({ title: "❌ Juego eliminado", description: `${currentItem.titulo} quitado por cantidad 0.`, variant: "destructive"});
+             }
+            return prevItems.filter(item => item.id !== id);
+        } else {
+            // Actualizar cantidad
+            return prevItems.map(item =>
+                item.id === id ? { ...item, quantity } : item
+            );
+        }
+    });
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+    uiToast({ title: "🗑️ Carrito vaciado", description: "Todos los juegos eliminados.", variant: "default" });
+  };
+
+  const getItemCount = (): number => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+   const getTotalPrice = (): number => {
+      return cartItems.reduce((total, item) => total + item.precio * item.quantity, 0);
+   };
+
+  const contextValue: CartContextValue = {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getItemCount,
+    getTotalPrice,
+  };
+
+  return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
 };
 
-export default GameCard;
+export const useCart = (): CartContextValue => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error("useCart debe ser usado dentro de un CartProvider");
+  }
+  return context;
+};
